@@ -21,12 +21,23 @@ function showLogin(msg) {
 function showApp() {
   $('login').classList.add('hidden');
   $('app').classList.remove('hidden');
+  const sb = $('starBanner');
+  if (sb) {
+    let hide = false;
+    try { hide = localStorage.getItem('lp_star_hide') === '1'; } catch {}
+    sb.style.display = hide ? 'none' : '';
+  }
 }
 
 $('loginBtn').onclick = doLogin;
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 $('langBtn').onclick = () => setLang(LANG === 'en' ? 'zh' : 'en');
 $('langBtnLogin').onclick = () => setLang(LANG === 'en' ? 'zh' : 'en');
+const starClose = $('starClose');
+if (starClose) starClose.onclick = () => {
+  $('starBanner').style.display = 'none';
+  try { localStorage.setItem('lp_star_hide', '1'); } catch {}
+};
 async function doLogin() {
   sessionStorage.setItem('lp_pw', $('pw').value);
   $('loginErr').textContent = '';
