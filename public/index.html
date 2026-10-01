@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkPulse · 推广短链与点击统计</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+
+<div id="login" class="login hidden">
+  <div class="logo">⚡</div>
+  <h1>LinkPulse</h1>
+  <p>推广短链与点击统计 · 请输入管理密码</p>
+  <input id="pw" type="password" placeholder="••••••••" autocomplete="current-password">
+  <button id="loginBtn">进入看板</button>
+  <div id="loginErr" class="err"></div>
+</div>
+
+<div id="app" class="wrap hidden">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">⚡</div>
+      <div>
+        <h1>LinkPulse <span>链光</span></h1>
+        <p>推广短链与点击统计</p>
+      </div>
+    </div>
+    <div class="badge"><i></i>LinkPulse 链光</div>
+  </header>
+
+  <section class="cards">
+    <div class="card"><div class="k">短链总数</div><div class="v" id="sLinks">–</div></div>
+    <div class="card hl"><div class="k">累计点击</div><div class="v" id="sClicks">–</div></div>
+    <div class="card"><div class="k">今日点击 <small>/ 独立访客</small></div><div class="v" id="sToday">–</div></div>
+    <div class="card"><div class="k">近 7 天点击</div><div class="v" id="sWeek">–</div></div>
+  </section>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2 id="formTitle">创建短链</h2>
+      <div class="sub">短码留空则自动生成 6 位；渠道用来区分投放位置（如：朋友圈 / 推文 / 群发）</div>
+      <form class="create" id="createForm">
+        <div class="field full"><label>A 目标链接 URL</label><input id="fTarget" placeholder="https://…" required></div>
+        <div class="field full abtoggle"><label class="chk"><input type="checkbox" id="fAB"><b>启用 A/B 测试</b><span>同一短链按比例分流到两个目标页，对比转化效果</span></label></div>
+        <div class="field full" id="abFields" style="display:none">
+          <div class="field" style="margin-bottom:10px"><label>B 目标链接</label><input id="fTargetB" placeholder="https://…"></div>
+          <div class="field" style="max-width:220px"><label>A 版本流量占比 %</label><input id="fSplit" type="number" min="0" max="100" value="50"></div>
+        </div>
+        <div class="field"><label>自定义短码（可选）</label><input id="fSlug" placeholder="如：muse-invite" pattern="[a-zA-Z0-9_-]{3,32}"></div>
+        <div class="field"><label>渠道备注（可选）</label><input id="fChannel" placeholder="如：朋友圈"></div>
+        <div class="field full"><label>标题备注（可选）</label><input id="fTitle" placeholder="如：Muse 邀请注册"></div>
+        <div class="field full"><button type="submit" id="submitBtn">生成短链</button><button type="button" id="cancelEdit" class="ghost" style="display:none;margin-left:8px">取消编辑</button><div id="createErr" class="err"></div></div>
+      </form>
+    </div>
+    <div class="panel">
+      <h2>14 日点击趋势</h2>
+      <div class="sub">柱状 = 点击数 · 折线 = 独立访客</div>
+      <svg id="chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
+      <div class="legend"><span><i style="background:#b8f53d"></i>点击</span><span><i style="background:#67e8f9"></i>独立访客</span></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>渠道排行 <span class="sub">· 近 30 天</span></h2>
+      <div class="rank" id="rankChannel"></div>
+    </div>
+    <div class="panel">
+      <h2>来源排行 <span class="sub">· 近 30 天</span></h2>
+      <div class="rank" id="rankRef"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px">
+    <h2>活跃热力图 <span class="sub">· 近 30 天 · 北京时间</span></h2>
+    <div class="sub">用户哪天、几点最活跃——发推广内容就挑最亮的格子</div>
+    <div id="heatmap" class="heatmap"></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px">
+    <h2>我的短链</h2>
+    <div class="sub">点击「复制」拿到推广链接，发到任何地方；跳转自动统计</div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>短链</th><th>目标</th><th>A/B</th><th>渠道</th><th>点击</th><th>创建</th><th></th></tr></thead>
+      <tbody id="linkRows"></tbody>
+    </table></div>
+  </div>
+
+  <div class="panel">
+    <h2>实时点击流</h2>
+    <div class="sub">最近 12 次访问</div>
+    <div class="feed" id="feed"></div>
+  </div>
+
+  <div id="qrModal" class="modal">
+    <div class="mbox">
+      <h3 id="qrTitle">推广二维码</h3>
+      <img id="qrImg" alt="二维码">
+      <div class="sub" id="qrUrl"></div>
+      <div class="mbtns">
+        <a id="qrDl" class="btn" download>下载 PNG</a>
+        <button class="ghost" id="qrClose">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=5"></script>
+</body>
+</html>
