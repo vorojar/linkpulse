@@ -107,7 +107,9 @@ function hostOf(ref) {
   try { return new URL(ref).hostname.replace(/^www\./, ''); }
   catch { return ref ? '(直接访问)' : '(直接访问)'; }
 }
-// 从 UA 识别宿主 App / 浏览器 / 操作系统（启发式，够推广分析用）
+// Detect host app / browser / OS from UA (heuristic, good enough for campaign analytics).
+// Covers the in-app browsers people actually share links in: WeChat, Weibo, QQ,
+// DingTalk, LINE, Instagram, Facebook, X, TikTok, Snapchat, Pinterest, Reddit, LinkedIn.
 function parseUA(raw) {
   const l = (raw || '').toLowerCase();
   let app = '';
@@ -115,6 +117,15 @@ function parseUA(raw) {
   else if (l.includes('weibo')) app = '微博';
   else if (/\bqq\//.test(l)) app = 'QQ';
   else if (l.includes('dingtalk')) app = '钉钉';
+  else if (l.includes(' line/')) app = 'LINE';
+  else if (l.includes('instagram')) app = 'Instagram';
+  else if (l.includes('fban/') || l.includes('fbav/')) app = 'Facebook';
+  else if (l.includes('twitter')) app = 'X';
+  else if (l.includes('tiktok') || l.includes('musical_ly') || l.includes('bytedance')) app = 'TikTok';
+  else if (l.includes('snapchat')) app = 'Snapchat';
+  else if (l.includes('pinterest')) app = 'Pinterest';
+  else if (l.includes('reddit')) app = 'Reddit';
+  else if (l.includes('linkedin')) app = 'LinkedIn';
   let os = '';
   if (/iphone|ipad|ipod/.test(l)) os = 'iOS';
   else if (/android/.test(l)) os = 'Android';
@@ -123,6 +134,7 @@ function parseUA(raw) {
   else if (/linux/.test(l)) os = 'Linux';
   let browser = '';
   if (l.includes('micromessenger')) browser = '微信内置';
+  else if (app) browser = app + ' in-app';
   else if (/edg\//.test(l)) browser = 'Edge';
   else if (/chrome\//.test(l)) browser = 'Chrome';
   else if (/safari\//.test(l)) browser = 'Safari';
