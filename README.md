@@ -1,73 +1,120 @@
-# ⚡ LinkPulse 链光
+# LinkPulse ⚡
 
-> **Self-hosted short-link service with click analytics that understands Chinese social apps.**
-> 自建短链服务 —— 天生看懂微信 / QQ / 微博。
+[![License: MIT](https://img.shields.io/badge/License-MIT-lime.svg)](LICENSE)
+[![Self-hosted](https://img.shields.io/badge/self--hosted-your%20server-cyan.svg)](#quick-start)
+[![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](#quick-start)
 
-![dashboard](docs/dashboard.png)
+**The self-hosted Bitly alternative that tells you which social app your clicks came from.**
 
-## 为什么是 LinkPulse
+Bitly, Dub, and Shlink can't tell you whether a click came from the X in-app browser or Safari. LinkPulse can — WeChat, LINE, Instagram, X, TikTok, Facebook, QQ, Weibo, DingTalk and more, detected per click, right on your dashboard.
 
-市面上的短链服务（Bitly、Dub、Shlink…）没有一个能告诉你：**这次点击来自微信内置浏览器还是 Safari**。
-做中文推广的人都知道，这个区别决定了你要不要做微信内的落地页适配 —— 而 LinkPulse 把它做成了第一公民。
+[中文版说明](README_zh.md)
 
-- **微信生态归因**：识别微信 / QQ / 微博内置浏览器、手机系统、浏览器、系统语言
-- **隐私优先**：访客原始 IP 从不落盘，只存加盐 SHA-256 哈希（16 位 hex，不可逆）
-- **A/B 测试**：一条短链、两个目标页、按权重分流，分版本统计点击
-- **推广二维码**：每条短链一键生成 480px PNG，直接下载
-- **24×7 活跃热力图**：近 30 天、按北京时间聚合，一眼看出用户什么时候最活跃
-- **实时点击流**：最近访问明细，30 分钟重复点击自动标记，UTM 参数透传
-- **单用户、零依赖**：Express + PostgreSQL，原生 JS 前端，无构建步骤
+![LinkPulse dashboard](docs/dashboard.png)
+![QR code sharing](docs/qr.png)
 
-## 一分钟跑起来
+## Why LinkPulse
+
+- **Know where clicks really come from.** Every click is attributed to its host app — WeChat, LINE, Instagram, X, TikTok, Facebook, Snapchat, Pinterest, Reddit, LinkedIn, QQ, Weibo, DingTalk — plus browser, OS, language, referrer and UTM passthrough. Stop guessing which social channel actually converts.
+- **Free forever.** No $10–$300/mo subscription, no per-seat pricing, no "5 links on the free plan". Your server, your links, your data. They can never be held hostage by a cancelled subscription.
+- **One-command deploy.** `docker compose up` and you're live. Or paste one prompt into Claude / Codex / Muse and let your AI agent deploy it for you ([see below](#deploy-with-your-ai-agent)).
+- **Built-in A/B testing.** Split one short link between two target pages by ratio, compare clicks per variant on the dashboard. No third-party experiment tool needed.
+- **Privacy-first.** Raw IP addresses are never stored — only a salted, truncated SHA-256 hash used for 30-minute repeat-click detection. No cookies, no fingerprinting.
+- **QR codes included.** One click generates a shareable QR code PNG per link. Bitly charges extra for this.
+
+## LinkPulse vs the rest
+
+| | **LinkPulse** | Bitly | Dub.co | BL.INK | Shlink |
+|---|---|---|---|---|---|
+| Price | Free forever (self-hosted) | $10–$300/mo (free: 5 links/mo) | from $24/mo | Custom (enterprise) | Free (self-hosted) |
+| Self-hosted | ✅ | ❌ | ✅ (complex setup) | ❌ | ✅ |
+| Social in-app attribution | ✅ WeChat / LINE / IG / X / TikTok / FB … | ❌ | ❌ | ❌ | ❌ |
+| Built-in A/B testing | ✅ | ❌ | ❌ | — | ❌ |
+| QR codes | ✅ included | Paid add-on | Paid plans | — | ✅ |
+| Click analytics | ✅ | Paid plans | ✅ | ✅ | ✅ |
+| Your data stays on your server | ✅ | ❌ | ❌ | ❌ | ✅ |
+| One-command deploy | ✅ `docker compose up` | — | — | — | ✅ |
+
+## Quick start
 
 ```bash
-cp .env.example .env        # 填好 ADMIN_PASSWORD / IP_SALT 等
+git clone https://github.com/vorojar/linkpulse.git
+cd linkpulse
+cp .env.example .env   # fill in ADMIN_PASSWORD, IP_SALT, CRON_SECRET, POSTGRES_PASSWORD
 docker compose up -d --build
 ```
 
-打开 `http://localhost:8080`，输入你设置的 `ADMIN_PASSWORD`，开始创建短链。
+Open `http://your-server:8080`, enter your `ADMIN_PASSWORD` — done. The database schema is created automatically on first boot.
 
-> 生产环境请配好反向代理（HTTPS）+ 自定义域名，并设置强密码。
+For a public domain with HTTPS, put Caddy / Traefik / Nginx in front (e.g. `go.example.com` → `127.0.0.1:8080`).
 
-## 功能一览
+## Deploy with your AI agent
 
-| 功能 | 说明 |
-|---|---|
-| 短链创建 | 自定义短码（可选）、渠道备注（如：朋友圈 / 推文 / 群发）、标题备注 |
-| 点击跳转 | 热链内存缓存（60s 新鲜 / 5min SWR），302 跳转，`utm_*` 参数透传到目标页 |
-| 点击归因 | App 来源（微信/QQ/微博/钉钉）、浏览器、OS、语言、是否 30 分钟内重复点击 |
-| A/B 测试 | 可选开启；双目标 URL + 自定义权重；看板显示 A/B 各版本点击数 |
-| 二维码 | `GET /api/links/:id/qr`，按当前访问域名生成，可下载 |
-| 热力图 | 近 30 天星期×小时矩阵，Asia/Shanghai 时区 |
-| 趋势 & 排行 | 14 日点击趋势（点击数 / 独立访客）、渠道排行、来源排行 |
-| 每日聚合 | `POST /api/cron/aggregate`（配 CRON_SECRET），汇总 `daily_stats` |
+Using Claude, Codex, Muse or any coding agent? Paste this prompt — it deploys the whole stack to your VPS:
 
-![QR code](docs/qr.png)
+> Deploy the LinkPulse stack from https://github.com/vorojar/linkpulse to my Ubuntu 24.04 VPS (IP: YOUR_VPS_IP) using docker compose.
+> 1. Clone the repo.
+> 2. Copy `.env.example` to `.env` and generate strong random values for `ADMIN_PASSWORD`, `IP_SALT`, `CRON_SECRET`, `POSTGRES_PASSWORD`.
+> 3. Run `docker compose up -d --build`.
+> 4. Verify `http://YOUR_VPS_IP:8080/api/health` returns HTTP 200.
+> Then give me the dashboard URL and tell me where the admin password is stored.
 
-## 配置
+Point your own domain at the VPS and add HTTPS with Caddy (`reverse_proxy 127.0.0.1:8080`) when you're ready to share links publicly.
 
-| 环境变量 | 必填 | 说明 |
+## Configuration
+
+All settings are environment variables (see `.env.example`):
+
+| Variable | Required | Purpose |
 |---|---|---|
-| `ADMIN_PASSWORD` | ✅ | 看板登录密码 |
-| `IP_SALT` | ✅ | IP 哈希加盐（`openssl rand -hex 16` 生成一个） |
-| `DATABASE_URL` | ✅ | Postgres 连接串（docker compose 已配好） |
-| `CRON_SECRET` | 选填 | 保护 `/api/cron/aggregate` 的密钥 |
-| `PORT` | 选填 | 监听端口，默认 8080 |
+| `ADMIN_PASSWORD` | ✅ | Dashboard login password |
+| `IP_SALT` | ✅ | Salt for hashing visitor IPs (privacy) |
+| `CRON_SECRET` | ✅ | Protects the daily aggregation endpoint |
+| `POSTGRES_PASSWORD` | ✅ | Database password |
+| `POSTGRES_DB` | – | Database name (default `linkpulse`) |
+| `PORT` | – | Web port (default `8080`) |
 
-## 本地开发（不用 Docker）
+## Features
+
+- **Short links** — auto 6-char slugs or custom codes, create / edit / delete from the dashboard
+- **Click analytics** — totals, today / 7-day / 14-day trend (clicks + unique visitors), top channels, top referrers, 24×7 activity heatmap, live click stream
+- **Social attribution** — per-click host app (WeChat / LINE / Instagram / X / TikTok / Facebook / …), browser, OS, language, referrer, UTM passthrough
+- **Repeat detection** — same visitor re-clicking within 30 minutes is flagged, not double-counted as a unique
+- **A/B testing** — two target URLs per link, configurable traffic split, per-variant click counts
+- **QR codes** — `GET /api/links/:id/qr` returns a PNG, downloadable from the dashboard
+- **Single admin login** — HTTP Basic auth, no user management to babysit
+- **English / 中文 UI** — toggle in the header, remembered per browser
+
+## Privacy by design
+
+- Visitor IPs are **never stored**. Each click stores `SHA256(IP_SALT + ip)` truncated to 16 hex chars — enough to detect repeat clicks, impossible to reverse.
+- No cookies, no fingerprinting, no third-party trackers. The dashboard is a single static page talking to your own API.
+
+## API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/:slug` | 302 redirect + async click logging |
+| `GET` | `/api/links` | List links (auth) |
+| `POST` | `/api/links` | Create link (auth) |
+| `PATCH` | `/api/links/:id` | Edit target / A-B / title / channel (auth) |
+| `DELETE` | `/api/links/:id` | Delete link + its stats (auth) |
+| `GET` | `/api/stats/overview` | Dashboard stats (auth) |
+| `GET` | `/api/links/:id/qr` | QR code PNG (auth) |
+| `GET` | `/api/health` | Health check |
+
+Auth: HTTP Basic, user `admin`, password `ADMIN_PASSWORD`.
+
+## Local development
 
 ```bash
-npm ci
-export DATABASE_URL=postgres://postgres:pw@localhost:5432/linkpulse
-export ADMIN_PASSWORD=dev-password IP_SALT=dev-salt
-node migrate.js   # 建表（幂等）
-node server.js
+npm install
+cp .env.example .env   # needs a reachable Postgres; set DATABASE_URL or POSTGRES_* vars
+node migrate.js && node server.js
 ```
 
-## 技术栈
-
-Node.js 20 · Express · PostgreSQL 16 · 原生 HTML/CSS/JS（无前端框架、无构建）
+Stack: Node.js + Express, PostgreSQL, vanilla JS dashboard (no build step, no framework).
 
 ## License
 
-MIT — 随便用，不用跟我说。但如果你用它赚到了钱，欢迎回来点个 ⭐。
+MIT — see [LICENSE](LICENSE). Your links, your server, your rules.
