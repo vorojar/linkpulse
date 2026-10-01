@@ -59,6 +59,8 @@ en: {
   delConfirm: 'Delete this link? Its stats will be deleted too.',
   repeatPill: 'Repeat',
   clicksWord: 'clicks',
+  starText: 'If LinkPulse helped you, please give us a Star on GitHub — it means a lot to us 👉',
+  starDismiss: 'Dismiss',
 },
 zh: {
   docTitle: 'LinkPulse · 推广短链与点击统计',
@@ -117,6 +119,8 @@ zh: {
   delConfirm: '确定删除这条短链吗？它的统计也会一起删除。',
   repeatPill: '重复',
   clicksWord: '点击',
+  starText: '如果 LinkPulse 帮到了你，请在 GitHub 点个 Star，这对我们意义重大 👉',
+  starDismiss: '关闭',
 }
 };
 
@@ -146,6 +150,7 @@ function applyI18n() {
   document.title = t('docTitle');
   document.querySelectorAll('[data-i18n]').forEach(el => { el.innerHTML = t(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
   ['langBtn', 'langBtnLogin'].forEach(id => { const b = document.getElementById(id); if (b) b.textContent = LANG === 'en' ? '中文' : 'EN'; });
   if (typeof render === 'function' && typeof lastStats !== 'undefined' && lastStats) render();
 }
