@@ -156,3 +156,15 @@ tr:last-child td { border-bottom: none; }
 .chk input { width: auto; accent-color: #b8f53d; }
 .chk b { font-weight: 600; }
 .chk span { color: var(--dim); font-size: 12px; }
+
+/* Star-us-on-GitHub banner */
+.star-banner { position: relative; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+  border: 1px solid rgba(96,165,250,.4); background: rgba(59,130,246,.08); color: #bfdbfe;
+  border-radius: 12px; padding: 10px 44px 10px 16px; margin-bottom: 18px; font-size: 14px; text-align: center; }
+.star-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(96,165,250,.55); border-radius: 999px;
+  padding: 5px 14px; color: #dbeafe; text-decoration: none; font-weight: 600; background: rgba(59,130,246,.12); white-space: nowrap; }
+.star-btn:hover { background: rgba(59,130,246,.25); }
+.star-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.star-x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none;
+  color: #93c5fd; font-size: 14px; cursor: pointer; padding: 6px; opacity: .7; }
+.star-x:hover { opacity: 1; }
